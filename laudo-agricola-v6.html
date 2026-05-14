@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Laudo Agrícola">
+<meta name="theme-color" content="#1D9E75">
+<title>Laudo Fotográfico Agrícola</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g:#1D9E75;--gd:#0F6E56;--gl:#E1F5EE;
+  --a:#BA7517;--al:#FEF3DC;
+  --r:#B83232;--rl:#FDEAEA;
+  --t:#2A2A28;--tm:#6B6A66;--tb:#ADACA8;
+  --bg:#F5F4F0;--card:#FFFFFF;--border:#DDDCD8;
+  --rad:14px;--rads:8px;--sh:0 1px 4px rgba(0,0,0,0.07);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t);font-size:15px;line-height:1.5;min-height:100vh;overscroll-behavior:none}
+.screen{display:none;min-height:100vh}.screen.active{display:block}
+.hdr{background:var(--g);color:#fff;padding:14px 16px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.hdr-back{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px;line-height:1;width:32px}
+.hdr-title{font-size:17px;font-weight:700;flex:1}
+.hdr-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:13px;font-weight:600;padding:6px 13px;border-radius:20px;cursor:pointer;white-space:nowrap}
+.home-body{padding:16px;padding-bottom:24px}
+.hero{background:linear-gradient(135deg,var(--g),var(--gd));border-radius:var(--rad);padding:20px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.hero::after{content:'🌱';position:absolute;right:-10px;bottom:-10px;font-size:80px;opacity:0.12;line-height:1}
+.hero h1{font-size:20px;font-weight:700;margin-bottom:3px}
+.hero p{font-size:13px;opacity:0.85}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+.stat{background:rgba(255,255,255,0.15);border-radius:var(--rads);padding:10px;text-align:center}
+.stat-n{font-size:22px;font-weight:700;line-height:1}
+.stat-l{font-size:10px;opacity:0.8;margin-top:2px}
+.btn-novo{width:100%;background:var(--g);color:#fff;border:none;border-radius:var(--rad);padding:15px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;box-shadow:0 4px 12px rgba(29,158,117,0.35)}
+.btn-novo:active{transform:scale(0.98)}
+.sec-lbl{font-size:12px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
+.laudo-card{background:var(--card);border-radius:var(--rad);border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;cursor:pointer;box-shadow:var(--sh)}
+.laudo-card:active{background:#f9f8f5}
+.lc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.lc-nome{font-weight:700;font-size:15px;flex:1;padding-right:8px}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.badge-r{background:var(--al);color:var(--a)}
+.badge-c{background:var(--gl);color:var(--gd)}
+.lc-info{font-size:13px;color:var(--tm);display:flex;flex-direction:column;gap:2px}
+.lc-foot{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--tb)}
+.empty{text-align:center;padding:48px 20px;color:var(--tm)}
+.empty-ic{font-size:52px;margin-bottom:12px}
+.empty p{font-size:14px;line-height:1.6}
+.form-body{padding:16px;padding-bottom:90px}
+.fsec{background:var(--card);border-radius:var(--rad);border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.fsec-title{font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px}
+.fg{margin-bottom:13px}.fg:last-child{margin-bottom:0}
+.flbl{font-size:13px;font-weight:600;color:var(--t);margin-bottom:6px;display:block}
+.flbl .req{color:var(--r);margin-left:2px}
+.finput{width:100%;border:1.5px solid var(--border);border-radius:var(--rads);padding:11px 13px;font-size:15px;color:var(--t);background:#fff;outline:none;-webkit-appearance:none;transition:border-color 0.15s}
+.finput:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(29,158,117,0.1)}
+.fselect{width:100%;border:1.5px solid var(--border);border-radius:var(--rads);padding:11px 13px;font-size:15px;color:var(--t);background:#fff;outline:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23ADACA8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+.fselect:focus{border-color:var(--g)}
+.ftextarea{width:100%;border:1.5px solid var(--border);border-radius:var(--rads);padding:11px 13px;font-size:15px;color:var(--t);background:#fff;outline:none;resize:vertical;min-height:88px;font-family:inherit}
+.ftextarea:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(29,158,117,0.1)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--border);border-radius:20px;padding:7px 15px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t);background:#fff}
+.chip.sel-g{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.chip.sel-a{border-color:var(--a);background:var(--al);color:var(--a)}
+
+/* FOTOS GRID */
+.fotos-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.foto-item{position:relative;border-radius:var(--rads);overflow:hidden;aspect-ratio:4/3;background:var(--bg);border:1px solid var(--border);cursor:pointer}
+.foto-item img{width:100%;height:100%;object-fit:cover;display:block}
+.foto-gps{position:absolute;bottom:28px;right:6px;background:rgba(255,255,255,0.92);color:#111;font-size:8px;padding:3px 5px;border-radius:4px;line-height:1.4;font-family:monospace;white-space:pre;border:1px solid rgba(0,0,0,0.12)}
+.foto-rm{position:absolute;top:6px;right:6px;background:rgba(180,0,0,0.8);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:2}
+.foto-edit{position:absolute;top:6px;left:6px;background:rgba(29,158,117,0.85);color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:700;cursor:pointer;z-index:2}
+.foto-leg{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.78));padding:4px 6px 6px;color:#fff;font-size:10px;line-height:1.3}
+.foto-sem-leg{position:absolute;bottom:0;left:0;right:0;background:rgba(186,117,23,0.85);padding:4px 6px;color:#fff;font-size:10px;font-weight:600;text-align:center}
+.btn-foto-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-foto{width:100%;border:2px dashed var(--g);color:var(--g);background:var(--gl);border-radius:var(--rad);padding:13px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-foto:active{opacity:0.8}
+input[type=file]{display:none}
+
+.fab{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:10px;z-index:50}
+.btn-draft{flex:1;border:1.5px solid var(--g);color:var(--g);background:#fff;border-radius:var(--rad);padding:13px;font-size:14px;font-weight:700;cursor:pointer}
+.btn-done{flex:2;background:var(--g);color:#fff;border:none;border-radius:var(--rad);padding:13px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(29,158,117,0.3)}
+
+/* VIEW */
+.view-body{padding:16px;padding-bottom:100px}
+.view-hero{background:linear-gradient(135deg,var(--g),var(--gd));border-radius:var(--rad);padding:18px;color:#fff;margin-bottom:12px}
+.view-hero h2{font-size:19px;font-weight:700;margin-bottom:8px}
+.vrow{font-size:13px;opacity:0.9;margin-bottom:3px;display:flex;gap:6px}
+.vrow strong{opacity:1;font-weight:700}
+.view-sec{background:var(--card);border-radius:var(--rad);border:1px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--sh)}
+.view-sec-title{font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px}
+.view-foto{margin-bottom:16px}.view-foto:last-child{margin-bottom:0}
+.view-foto-wrap{position:relative;border-radius:var(--rads);overflow:hidden;border:1px solid var(--border)}
+.view-foto img{width:100%;display:block}
+.view-foto-gps{position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.92);color:#111;font-size:10px;padding:4px 7px;border-radius:5px;line-height:1.5;font-family:monospace;white-space:pre;border:1px solid rgba(0,0,0,0.1)}
+.view-foto-meta{margin-top:8px}
+.view-foto-num{font-size:11px;color:var(--tb);margin-bottom:2px}
+.view-foto-leg{font-size:14px;font-weight:600;color:var(--t)}
+.view-foto-coords{font-size:11px;color:var(--tm);font-family:monospace;margin-top:2px}
+
+.acoes{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;z-index:50}
+.btn-ac{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rads);padding:9px 4px;font-size:10px;font-weight:700;color:var(--t);cursor:pointer}
+.btn-ac .ic{font-size:18px}
+.btn-ac.prim{background:var(--g);color:#fff;border-color:var(--g)}
+.btn-ac.dang{background:var(--rl);color:var(--r);border-color:#F5C6C6}
+.btn-ac:active{opacity:0.8;transform:scale(0.97)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:flex-end}
+.modal-bg.hidden{display:none}
+.modal{background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:14px auto 0}
+.modal-head{padding:16px 16px 0;font-size:17px;font-weight:700}
+.modal-body{padding:16px}
+.modal-preview{width:100%;border-radius:var(--rads);margin-bottom:12px;max-height:200px;object-fit:cover;display:block;border:1px solid var(--border)}
+.modal-gps{font-size:12px;padding:8px 11px;border-radius:var(--rads);margin-bottom:13px;line-height:1.5}
+.modal-gps.loading{background:var(--al);color:var(--a)}
+.modal-gps.ok{background:var(--gl);color:var(--gd)}
+.modal-gps.err{background:var(--rl);color:var(--r)}
+.modal-gps.info{background:#F0F0F0;color:var(--tm)}
+.modal-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.btn-cancel{border:1.5px solid var(--border);background:#fff;color:var(--t);border-radius:var(--rad);padding:13px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-save{background:var(--g);color:#fff;border:none;border-radius:var(--rad);padding:13px;font-size:15px;font-weight:700;cursor:pointer}
+
+.toast{position:fixed;bottom:110px;left:16px;right:16px;background:#2C2C2A;color:#fff;padding:13px 16px;border-radius:var(--rad);font-size:14px;font-weight:600;z-index:300;transform:translateY(20px);opacity:0;transition:all 0.25s;text-align:center;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--gd)}.toast.err{background:var(--r)}
+.loading{position:fixed;inset:0;background:rgba(255,255,255,0.88);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.loading.hidden{display:none}
+.spinner{width:38px;height:38px;border:3px solid var(--border);border-top-color:var(--g);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;color:var(--tm);font-weight:600}
+.cfg-body{padding:16px;padding-bottom:32px}
+.btn-full{width:100%;background:var(--g);color:#fff;border:none;border-radius:var(--rad);padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:0 4px 12px rgba(29,158,117,0.25)}
+.btn-full:active{opacity:0.85}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="s-home" class="screen active">
+  <div class="hdr">
+    <div class="hdr-title">📋 Laudo Agrícola</div>
+    <button class="hdr-btn" onclick="goConfig()">⚙ Perito</button>
+  </div>
+  <div class="home-body">
+    <div class="hero">
+      <h1>Laudos Fotográficos</h1>
+      <p>Seguro Rural · Vistoria a Campo</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-n" id="st-total">0</div><div class="stat-l">Total</div></div>
+        <div class="stat"><div class="stat-n" id="st-conc">0</div><div class="stat-l">Concluídos</div></div>
+        <div class="stat"><div class="stat-n" id="st-rasc">0</div><div class="stat-l">Rascunhos</div></div>
+      </div>
+    </div>
+    <button class="btn-novo" onclick="goNovoLaudo()"><span style="font-size:20px">+</span> Novo Laudo Fotográfico</button>
+    <div class="sec-lbl">Laudos salvos</div>
+    <div id="lista-laudos"></div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div id="s-form" class="screen">
+  <div class="hdr">
+    <button class="hdr-back" onclick="goHome()">←</button>
+    <div class="hdr-title" id="form-title">Novo Laudo</div>
+  </div>
+  <div class="form-body">
+    <div class="fsec">
+      <div class="fsec-title">📄 Dados da Proposta</div>
+      <div class="fg"><label class="flbl">Segurado / Representante <span class="req">*</span></label><input class="finput" id="f-segurado" type="text" placeholder="Nome completo"></div>
+      <div class="fg"><label class="flbl">Número da Proposta / Apólice <span class="req">*</span></label><input class="finput" id="f-proposta" type="text" placeholder="Ex: 2024/00123-4"></div>
+      <div class="fg"><label class="flbl">CPF / CNPJ — Segurado / Representante</label><input class="finput" id="f-cpf" type="text" placeholder="000.000.000-00"></div>
+      <div class="fg">
+        <label class="flbl">Seguradora</label>
+        <select class="fselect" id="f-seguradora" onchange="toggleOutra('f-seguradora','f-seg-outra')">
+          <option value="">Selecione...</option>
+          <option>Allianz</option>
+          <option>Porto Seguro</option>
+          <option value="__outra__">Outra (digitar)</option>
+        </select>
+        <input class="finput" id="f-seg-outra" type="text" placeholder="Nome da seguradora" style="margin-top:8px;display:none">
+      </div>
+      <div class="fg"><label class="flbl">Data da Vistoria</label><input class="finput" id="f-data" type="date"></div>
+      <div class="fg"><label class="flbl">Município / UF</label><input class="finput" id="f-municipio" type="text" placeholder="Ex: Cascavel / PR"></div>
+    </div>
+
+    <div class="fsec">
+      <div class="fsec-title">🌱 Cultura e Evento</div>
+      <div class="fg">
+        <label class="flbl">Cultura <span class="req">*</span></label>
+        <div class="chips" id="chips-cultura">
+          <button class="chip" onclick="selChip(this,'cultura')">Soja</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Milho</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Trigo</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Sorgo</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Cevada</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Tomate</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Uva</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Maçã</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Cebola</button>
+          <button class="chip" onclick="selChip(this,'cultura')">Outra</button>
+        </div>
+        <input class="finput" id="f-cult-outra" type="text" placeholder="Digite a cultura" style="margin-top:8px;display:none">
+      </div>
+      <div class="fg">
+        <label class="flbl">Evento / Causa do Sinistro</label>
+        <div class="chips" id="chips-evento">
+          <button class="chip" onclick="selChip(this,'evento')">Granizo</button>
+          <button class="chip" onclick="selChip(this,'evento')">Geada</button>
+          <button class="chip" onclick="selChip(this,'evento')">Chuva excessiva</button>
+          <button class="chip" onclick="selChip(this,'evento')">Seca</button>
+          <button class="chip" onclick="selChip(this,'evento')">Vento forte</button>
+        </div>
+      </div>
+      <div class="fg"><label class="flbl">Observações Gerais</label><textarea class="ftextarea" id="f-obs" placeholder="Descreva o estado da lavoura, extensão dos danos, condições observadas..."></textarea></div>
+    </div>
+
+    <div class="fsec">
+      <div class="fsec-title">📷 Registro Fotográfico
+        <span style="font-size:11px;font-weight:400;color:var(--tm);text-transform:none;margin-left:4px">Toque na foto para editar legenda</span>
+      </div>
+      <div id="fotos-grid" class="fotos-grid"></div>
+      <div class="btn-foto-row">
+        <button class="btn-foto" onclick="abrirCamera()">📷 Câmera</button>
+        <button class="btn-foto" onclick="abrirGaleria()">🖼 Galeria</button>
+      </div>
+      <input type="file" id="input-camera" accept="image/*" capture="environment" onchange="processarFotos(event,true)">
+      <input type="file" id="input-galeria" accept="image/*" multiple onchange="processarFotos(event,false)">
+    </div>
+  </div>
+  <div class="fab">
+    <button class="btn-draft" onclick="salvar('rascunho')">Salvar rascunho</button>
+    <button class="btn-done" onclick="salvar('concluido')">✓ Concluir Laudo</button>
+  </div>
+</div>
+
+<!-- VIEW -->
+<div id="s-view" class="screen">
+  <div class="hdr">
+    <button class="hdr-back" onclick="goHome()">←</button>
+    <div class="hdr-title">Laudo Fotográfico</div>
+    <button class="hdr-btn" onclick="editarAtual()">Editar</button>
+  </div>
+  <div class="view-body" id="view-content"></div>
+  <div class="acoes">
+    <button class="btn-ac" onclick="shareWA()"><span class="ic">💬</span>WhatsApp</button>
+    <button class="btn-ac" onclick="shareEmail()"><span class="ic">✉️</span>E-mail</button>
+    <button class="btn-ac prim" onclick="gerarPDF()"><span class="ic">📄</span>PDF</button>
+    <button class="btn-ac dang" onclick="excluir()"><span class="ic">🗑</span>Excluir</button>
+  </div>
+</div>
+
+<!-- CONFIG -->
+<div id="s-config" class="screen">
+  <div class="hdr">
+    <button class="hdr-back" onclick="goHome()">←</button>
+    <div class="hdr-title">Dados do Perito</div>
+  </div>
+  <div class="cfg-body">
+    <div class="fsec">
+      <div class="fsec-title">👤 Identificação Profissional</div>
+      <div class="fg"><label class="flbl">Nome do Perito</label><input class="finput" id="c-nome" type="text" placeholder="Seu nome completo"></div>
+      <div class="fg"><label class="flbl">CREA / CFTA</label><input class="finput" id="c-crea" type="text" placeholder="Número do registro profissional"></div>
+      <div class="fg"><label class="flbl">Empresa / Consultoria</label><input class="finput" id="c-empresa" type="text" placeholder="Nome da empresa"></div>
+      <div class="fg"><label class="flbl">Telefone</label><input class="finput" id="c-tel" type="tel" placeholder="(00) 00000-0000"></div>
+      <div class="fg"><label class="flbl">E-mail</label><input class="finput" id="c-email" type="email" placeholder="seu@email.com"></div>
+    </div>
+    <button class="btn-full" onclick="salvarConfig()">✓ Salvar Dados</button>
+  </div>
+</div>
+
+<!-- MODAL NOVA FOTO -->
+<div class="modal-bg hidden" id="modal-foto">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head" id="modal-foto-titulo">📷 Foto adicionada</div>
+    <div class="modal-body">
+      <img id="modal-img" class="modal-preview" src="" alt="">
+      <div class="modal-gps info" id="modal-gps"></div>
+      <div class="fg">
+        <label class="flbl">Legenda <span style="font-size:12px;color:var(--tm);font-weight:400">(opcional)</span></label>
+        <textarea class="ftextarea" id="modal-leg" placeholder="Descreva o que está na foto: local, condição, dano observado..." style="min-height:90px"></textarea>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="cancelFoto()">Cancelar</button>
+        <button class="btn-save" onclick="confirmarFoto()">✓ Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR LEGENDA -->
+<div class="modal-bg hidden" id="modal-editar">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">✏️ Editar Legenda</div>
+    <div class="modal-body">
+      <img id="edit-img" class="modal-preview" src="" alt="">
+      <div id="edit-gps-info" class="modal-gps info" style="margin-bottom:13px"></div>
+      <div class="fg">
+        <label class="flbl">Legenda <span style="font-size:12px;color:var(--tm);font-weight:400">(opcional)</span></label>
+        <textarea class="ftextarea" id="edit-leg" style="min-height:100px" placeholder="Descreva o que está na foto..."></textarea>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="cancelEditar()">Cancelar</button>
+        <button class="btn-save" onclick="salvarEditar()">✓ Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading hidden" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-txt" id="loading-txt">Processando...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DB='laudo_agri_v6';
+const CFG='laudo_cfg_v1';
+let laudos=[];
+let laudoAtual=null;
+let cultura='';
+let evento='';
+let fotoDataUrl=null;
+let fotoCoordsAtual=null;
+let fotosFila=[];
+let fotoFilaIdx=0;
+let fotoVeioCamera=false;
+let editandoIdx=-1;
+
+// ===== COMPRESSÃO =====
+function comprimirImagem(dataUrl,maxW=1200,q=0.65){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+      const c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',q));
+    };
+    img.onerror=()=>res(dataUrl);
+    img.src=dataUrl;
+  });
+}
+
+// ===== STORAGE =====
+function save(){
+  try{localStorage.setItem(DB,JSON.stringify(laudos));return true;}
+  catch(e){toast('⚠️ Armazenamento cheio — reduza o número de fotos','err',4000);return false;}
+}
+function load(){try{laudos=JSON.parse(localStorage.getItem(DB)||'[]');}catch(e){laudos=[];}}
+function saveCfg(d){try{localStorage.setItem(CFG,JSON.stringify(d));}catch(e){}}
+function loadCfg(){try{return JSON.parse(localStorage.getItem(CFG)||'{}');}catch(e){return {};}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+function fmtData(s){if(!s)return '';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+
+function toast(msg,tipo='',dur=2800){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast show '+tipo;
+  setTimeout(()=>el.className='toast',dur);
+}
+function showLoad(txt='Processando...'){document.getElementById('loading-txt').textContent=txt;document.getElementById('loading').classList.remove('hidden');}
+function hideLoad(){document.getElementById('loading').classList.add('hidden');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+
+const GPS_OK=location.protocol==='https:'||location.hostname==='localhost';
+
+function goHome(){
+  laudoAtual=null;fotoDataUrl=null;fotoCoordsAtual=null;
+  cultura='';evento='';fotosFila=[];fotoFilaIdx=0;fotoVeioCamera=false;editandoIdx=-1;
+  load();renderHome();show('s-home');
+}
+
+function renderHome(){
+  const total=laudos.length;
+  const conc=laudos.filter(l=>l.status==='concluido').length;
+  const rasc=laudos.filter(l=>l.status==='rascunho').length;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-conc').textContent=conc;
+  document.getElementById('st-rasc').textContent=rasc;
+  const el=document.getElementById('lista-laudos');
+  if(!laudos.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><p>Nenhum laudo criado ainda.<br>Toque em <strong>+ Novo Laudo</strong> para começar.</p></div>`;
+    return;
+  }
+  el.innerHTML=[...laudos].reverse().map(l=>`
+    <div class="laudo-card" onclick="abrirLaudo('${l.id}')">
+      <div class="lc-top">
+        <div class="lc-nome">${l.segurado||'Sem nome'}</div>
+        <div class="badge ${l.status==='concluido'?'badge-c':'badge-r'}">${l.status==='concluido'?'✓ Concluído':'⏳ Rascunho'}</div>
+      </div>
+      <div class="lc-info">
+        <span>Proposta: <strong>${l.proposta||'N/I'}</strong></span>
+        <span>${l.cultura||''}${l.evento?' · '+l.evento:''}</span>
+        ${l.seguradora?`<span>${l.seguradora}</span>`:''}
+      </div>
+      <div class="lc-foot">
+        <span>📷 ${(l.fotos||[]).length} foto(s)</span>
+        <span>${fmtData(l.data)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function goNovoLaudo(){
+  laudoAtual={id:uid(),segurado:'',proposta:'',cpf:'',seguradora:'',data:new Date().toISOString().split('T')[0],municipio:'',cultura:'',evento:'',obs:'',fotos:[],status:'rascunho',criadoEm:new Date().toISOString()};
+  cultura='';evento='';
+  preencherForm(laudoAtual);
+  document.getElementById('form-title').textContent='Novo Laudo';
+  show('s-form');
+}
+
+function editarAtual(){
+  if(!laudoAtual)return;
+  cultura=laudoAtual.cultura||'';evento=laudoAtual.evento||'';
+  preencherForm(laudoAtual);
+  document.getElementById('form-title').textContent='Editar Laudo';
+  show('s-form');
+}
+
+function preencherForm(l){
+  document.getElementById('f-segurado').value=l.segurado||'';
+  document.getElementById('f-proposta').value=l.proposta||'';
+  document.getElementById('f-cpf').value=l.cpf||'';
+  document.getElementById('f-data').value=l.data||new Date().toISOString().split('T')[0];
+  document.getElementById('f-municipio').value=l.municipio||'';
+  document.getElementById('f-obs').value=l.obs||'';
+  const seg=l.seguradora||'';
+  const selSeg=document.getElementById('f-seguradora');
+  const optsArr=Array.from(selSeg.options).map(o=>o.value);
+  if(seg&&!optsArr.includes(seg)){
+    selSeg.value='__outra__';
+    document.getElementById('f-seg-outra').style.display='block';
+    document.getElementById('f-seg-outra').value=seg;
+  } else {
+    selSeg.value=seg;
+    document.getElementById('f-seg-outra').style.display='none';
+  }
+  const cultLista=['Soja','Milho','Trigo','Sorgo','Cevada','Tomate','Uva','Maçã','Cebola','Outra'];
+  document.querySelectorAll('#chips-cultura .chip').forEach(c=>{
+    c.classList.toggle('sel-g',c.textContent===cultura||(cultura&&!cultLista.includes(cultura)&&c.textContent==='Outra'));
+  });
+  const outField=document.getElementById('f-cult-outra');
+  if(cultura==='Outra'||(!cultLista.includes(cultura)&&cultura)){
+    outField.style.display='block';
+    if(cultura!=='Outra')outField.value=cultura;
+  } else { outField.style.display='none'; }
+  document.querySelectorAll('#chips-evento .chip').forEach(c=>c.classList.toggle('sel-a',c.textContent===evento));
+  renderFotosGrid();
+}
+
+function toggleOutra(selId,inputId){
+  document.getElementById(inputId).style.display=document.getElementById(selId).value==='__outra__'?'block':'none';
+}
+
+function selChip(el,tipo){
+  if(tipo==='cultura'){
+    document.querySelectorAll('#chips-cultura .chip').forEach(c=>c.classList.remove('sel-g'));
+    cultura=cultura===el.textContent?'':el.textContent;
+    if(cultura)el.classList.add('sel-g');
+    document.getElementById('f-cult-outra').style.display=cultura==='Outra'?'block':'none';
+  } else {
+    document.querySelectorAll('#chips-evento .chip').forEach(c=>c.classList.remove('sel-a'));
+    evento=evento===el.textContent?'':el.textContent;
+    if(evento)el.classList.add('sel-a');
+  }
+}
+
+function renderFotosGrid(){
+  const fotos=laudoAtual?.fotos||[];
+  document.getElementById('fotos-grid').innerHTML=fotos.map((f,i)=>`
+    <div class="foto-item" onclick="abrirEditarLegenda(${i})">
+      <img src="${f.dataUrl}" alt="Foto ${i+1}" loading="lazy">
+      ${f.lat?`<div class="foto-gps">${f.lat.toFixed(5)}°\n${f.lng.toFixed(5)}°</div>`:''}
+      <button class="foto-rm" onclick="event.stopPropagation();removerFoto(${i})">×</button>
+      <button class="foto-edit" onclick="event.stopPropagation();abrirEditarLegenda(${i})">✏ legenda</button>
+      ${f.legenda
+        ?`<div class="foto-leg">${f.legenda}</div>`
+        :`<div class="foto-sem-leg">Sem legenda — toque para adicionar</div>`
+      }
+    </div>
+  `).join('');
+}
+
+// ===== EDITAR LEGENDA =====
+function abrirEditarLegenda(idx){
+  const f=laudoAtual.fotos[idx];
+  if(!f)return;
+  editandoIdx=idx;
+  document.getElementById('edit-img').src=f.dataUrl;
+  document.getElementById('edit-leg').value=f.legenda||'';
+  const gpsEl=document.getElementById('edit-gps-info');
+  if(f.lat){
+    gpsEl.className='modal-gps ok';
+    gpsEl.textContent=`📍 Lat: ${f.lat.toFixed(6)}°  Lng: ${f.lng.toFixed(6)}°`;
+  } else {
+    gpsEl.className='modal-gps info';
+    gpsEl.textContent=f.origem==='galeria'?'🖼 Foto da galeria — sem GPS':'📍 Sem coordenadas GPS';
+  }
+  document.getElementById('modal-editar').classList.remove('hidden');
+}
+
+function cancelEditar(){
+  document.getElementById('modal-editar').classList.add('hidden');
+  editandoIdx=-1;
+}
+
+function salvarEditar(){
+  if(editandoIdx<0)return;
+  laudoAtual.fotos[editandoIdx].legenda=document.getElementById('edit-leg').value.trim();
+  renderFotosGrid();
+  document.getElementById('modal-editar').classList.add('hidden');
+  editandoIdx=-1;
+  toast('Legenda atualizada!','ok');
+}
+
+function removerFoto(i){laudoAtual.fotos.splice(i,1);renderFotosGrid();toast('Foto removida');}
+function abrirCamera(){document.getElementById('input-camera').value='';document.getElementById('input-camera').click();}
+function abrirGaleria(){document.getElementById('input-galeria').value='';document.getElementById('input-galeria').click();}
+
+function getGPS(){
+  return new Promise(res=>{
+    if(!GPS_OK||!navigator.geolocation){res(null);return;}
+    navigator.geolocation.getCurrentPosition(
+      p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}),
+      ()=>res(null),{enableHighAccuracy:true,timeout:10000}
+    );
+  });
+}
+
+function lerBase64(file){
+  return new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
+}
+
+async function processarFotos(event,veioCamera){
+  const files=Array.from(event.target.files);
+  if(!files.length)return;
+  fotosFila=files;fotoFilaIdx=0;fotoVeioCamera=veioCamera;
+  await abrirModalFoto();
+}
+
+async function abrirModalFoto(){
+  if(fotoFilaIdx>=fotosFila.length)return;
+  showLoad('Preparando foto...');
+  const file=fotosFila[fotoFilaIdx];
+  const raw=await lerBase64(file);
+  fotoDataUrl=await comprimirImagem(raw);
+  hideLoad();
+  document.getElementById('modal-img').src=fotoDataUrl;
+  document.getElementById('modal-leg').value='';
+  document.getElementById('modal-foto-titulo').textContent=
+    fotosFila.length>1?`📷 Foto ${fotoFilaIdx+1} de ${fotosFila.length}`:'📷 Foto adicionada';
+  const gpsEl=document.getElementById('modal-gps');
+  fotoCoordsAtual=null;
+  if(fotoVeioCamera){
+    gpsEl.className='modal-gps loading';
+    gpsEl.textContent='📍 Obtendo coordenadas GPS...';
+    document.getElementById('modal-foto').classList.remove('hidden');
+    getGPS().then(coords=>{
+      fotoCoordsAtual=coords;
+      if(coords){
+        gpsEl.className='modal-gps ok';
+        gpsEl.textContent=`📍 Lat: ${coords.lat.toFixed(6)}°  Lng: ${coords.lng.toFixed(6)}°  (±${Math.round(coords.acc)}m)`;
+      } else {
+        gpsEl.className='modal-gps err';
+        gpsEl.textContent='⚠️ GPS não obtido — foto salva sem coordenadas';
+      }
+    });
+  } else {
+    gpsEl.className='modal-gps info';
+    gpsEl.textContent='🖼 Foto da galeria — sem coordenadas GPS';
+    document.getElementById('modal-foto').classList.remove('hidden');
+  }
+}
+
+function cancelFoto(){
+  document.getElementById('modal-foto').classList.add('hidden');
+  fotoDataUrl=null;fotoCoordsAtual=null;fotosFila=[];fotoFilaIdx=0;fotoVeioCamera=false;
+}
+
+function confirmarFoto(){
+  const leg=document.getElementById('modal-leg').value.trim();
+  laudoAtual.fotos.push({
+    dataUrl:fotoDataUrl,legenda:leg,
+    lat:fotoCoordsAtual?.lat||null,
+    lng:fotoCoordsAtual?.lng||null,
+    acc:fotoCoordsAtual?.acc||null,
+    timestamp:new Date().toISOString(),
+    origem:fotoVeioCamera?'camera':'galeria'
+  });
+  renderFotosGrid();
+  document.getElementById('modal-foto').classList.add('hidden');
+  fotoDataUrl=null;fotoCoordsAtual=null;
+  fotoFilaIdx++;
+  if(fotoFilaIdx<fotosFila.length){
+    setTimeout(abrirModalFoto,300);
+  } else {
+    const n=fotoFilaIdx;
+    fotosFila=[];fotoFilaIdx=0;fotoVeioCamera=false;
+    toast(`${n} foto(s) adicionada(s)!`,'ok');
+  }
+}
+
+function getSeguradora(){
+  const sel=document.getElementById('f-seguradora').value;
+  if(sel==='__outra__')return document.getElementById('f-seg-outra').value.trim();
+  return sel;
+}
+
+function getCulturaFinal(){
+  if(cultura==='Outra'){const v=document.getElementById('f-cult-outra').value.trim();return v||'Outra';}
+  return cultura;
+}
+
+function salvar(status){
+  const seg=document.getElementById('f-segurado').value.trim();
+  const prop=document.getElementById('f-proposta').value.trim();
+  if(!seg){toast('Informe o nome do segurado/representante','err');document.getElementById('f-segurado').focus();return;}
+  if(!prop){toast('Informe o número da proposta/apólice','err');document.getElementById('f-proposta').focus();return;}
+  if(!cultura){toast('Selecione a cultura','err');return;}
+  if(status==='concluido'&&!(laudoAtual.fotos||[]).length){toast('Adicione pelo menos uma foto para concluir','err');return;}
+
+  laudoAtual.segurado=seg;
+  laudoAtual.proposta=prop;
+  laudoAtual.cpf=document.getElementById('f-cpf').value.trim();
+  laudoAtual.seguradora=getSeguradora();
+  laudoAtual.data=document.getElementById('f-data').value;
+  laudoAtual.municipio=document.getElementById('f-municipio').value.trim();
+  laudoAtual.cultura=getCulturaFinal();
+  laudoAtual.evento=evento;
+  laudoAtual.obs=document.getElementById('f-obs').value.trim();
+  laudoAtual.status=status;
+  laudoAtual.atualizadoEm=new Date().toISOString();
+
+  const idx=laudos.findIndex(l=>l.id===laudoAtual.id);
+  if(idx>=0)laudos[idx]={...laudoAtual};
+  else laudos.push({...laudoAtual});
+
+  const ok=save();
+  if(!ok)return;
+
+  if(status==='concluido'){
+    toast('Laudo concluído e salvo!','ok');
+    const idSalvo=laudoAtual.id;
+    goHome();
+    setTimeout(()=>abrirLaudo(idSalvo),400);
+  } else {
+    toast('Rascunho salvo!','ok');
+    goHome();
+  }
+}
+
+function abrirLaudo(id){
+  load();
+  laudoAtual=laudos.find(l=>l.id===id);
+  if(!laudoAtual)return;
+  cultura=laudoAtual.cultura||'';evento=laudoAtual.evento||'';
+  renderView();show('s-view');
+}
+
+function renderView(){
+  const l=laudoAtual;const cfg=loadCfg();const fotos=l.fotos||[];
+  const fotosHtml=fotos.map((f,i)=>`
+    <div class="view-foto">
+      <div class="view-foto-wrap">
+        <img src="${f.dataUrl}" alt="Foto ${i+1}" loading="lazy">
+        ${f.lat?`<div class="view-foto-gps">${f.lat.toFixed(6)}°\n${f.lng.toFixed(6)}°</div>`:''}
+      </div>
+      <div class="view-foto-meta">
+        <div class="view-foto-num">Foto ${i+1}${f.timestamp?' · '+new Date(f.timestamp).toLocaleString('pt-BR'):''}${f.origem==='galeria'?' · Galeria':''}</div>
+        ${f.legenda?`<div class="view-foto-leg">${f.legenda}</div>`:'<div style="font-size:13px;color:var(--tb);font-style:italic">Sem legenda</div>'}
+        ${f.lat?`<div class="view-foto-coords">Lat: ${f.lat.toFixed(6)}° | Lng: ${f.lng.toFixed(6)}° | ±${f.acc?Math.round(f.acc)+'m':'?'}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('view-content').innerHTML=`
+    <div class="view-hero">
+      <h2>${l.segurado}</h2>
+      <div class="vrow"><strong>Proposta/Apólice:</strong> ${l.proposta}</div>
+      ${l.cpf?`<div class="vrow"><strong>CPF/CNPJ:</strong> ${l.cpf}</div>`:''}
+      ${l.seguradora?`<div class="vrow"><strong>Seguradora:</strong> ${l.seguradora}</div>`:''}
+      ${l.data?`<div class="vrow"><strong>Data:</strong> ${fmtData(l.data)}</div>`:''}
+      ${l.municipio?`<div class="vrow"><strong>Município:</strong> ${l.municipio}</div>`:''}
+      ${l.cultura?`<div class="vrow"><strong>Cultura:</strong> ${l.cultura}${l.evento?' — '+l.evento:''}</div>`:''}
+    </div>
+    ${cfg.nome?`<div class="view-sec"><div class="view-sec-title">👤 Perito Responsável</div><div style="font-size:14px;line-height:1.8"><strong>${cfg.nome}</strong><br>${cfg.crea?'CREA/CFTA: '+cfg.crea+'<br>':''}${cfg.empresa?cfg.empresa+'<br>':''}${cfg.tel||''}${cfg.email?' · '+cfg.email:''}</div></div>`:''}
+    ${l.obs?`<div class="view-sec"><div class="view-sec-title">📝 Observações</div><p style="font-size:14px;line-height:1.7">${l.obs}</p></div>`:''}
+    <div class="view-sec">
+      <div class="view-sec-title">📷 Registro Fotográfico (${fotos.length} foto${fotos.length!==1?'s':''})</div>
+      ${fotos.length?fotosHtml:'<p style="color:var(--tm);font-size:14px">Nenhuma foto adicionada.</p>'}
+    </div>
+  `;
+}
+
+function excluir(){
+  if(!laudoAtual)return;
+  if(!confirm(`Excluir laudo de ${laudoAtual.segurado}? Esta ação não pode ser desfeita.`))return;
+  laudos=laudos.filter(l=>l.id!==laudoAtual.id);
+  save();toast('Laudo excluído');goHome();
+}
+
+function shareWA(){
+  const l=laudoAtual;const cfg=loadCfg();
+  const txt=`*LAUDO FOTOGRÁFICO AGRÍCOLA*\n\n*Segurado/Representante:* ${l.segurado}\n*Proposta/Apólice:* ${l.proposta}\n${l.cpf?'*CPF/CNPJ:* '+l.cpf+'\n':''}*Seguradora:* ${l.seguradora||'N/I'}\n*Data:* ${fmtData(l.data)}\n*Município:* ${l.municipio||'N/I'}\n*Cultura:* ${l.cultura||'N/I'}${l.evento?' — '+l.evento:''}\n\n*Perito:* ${cfg.nome||'N/I'}${cfg.crea?' — CREA/CFTA: '+cfg.crea:''}\n${cfg.empresa?'*Empresa:* '+cfg.empresa+'\n':''}\n*Fotos registradas:* ${(l.fotos||[]).length}\n\n${l.obs?'*Observações:*\n'+l.obs:''}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+}
+
+function shareEmail(){
+  const l=laudoAtual;const cfg=loadCfg();
+  const sub=`Laudo Fotográfico — ${l.segurado} — Proposta ${l.proposta}`;
+  const body=`LAUDO FOTOGRÁFICO AGRÍCOLA\n\nSegurado/Representante: ${l.segurado}\nProposta/Apólice: ${l.proposta}\n${l.cpf?'CPF/CNPJ: '+l.cpf+'\n':''}Seguradora: ${l.seguradora||'N/I'}\nData: ${fmtData(l.data)}\nMunicípio: ${l.municipio||'N/I'}\nCultura: ${l.cultura||'N/I'}${l.evento?' — '+l.evento:''}\n\nPerito: ${cfg.nome||'N/I'}${cfg.crea?' — CREA/CFTA: '+cfg.crea:''}\n${cfg.empresa?'Empresa: '+cfg.empresa+'\n':''}\nTotal de fotos: ${(l.fotos||[]).length}\n\nObservações:\n${l.obs||'(sem observações)'}\n\n---\nPDF completo gerado pelo botão PDF no app.`;
+  window.open(`mailto:?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`,'_blank');
+  toast('Abrindo app de e-mail...','ok');
+}
+
+// ===== PDF — 6 FOTOS POR PÁGINA (2 colunas x 3 linhas) =====
+async function gerarPDF(){
+  if(!laudoAtual)return;
+  const l=laudoAtual;const cfg=loadCfg();const fotos=l.fotos||[];
+  showLoad('Gerando PDF...');
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4'});
+    const W=210,H=297,mL=10,mR=10;
+    let y=10;
+
+    // CABEÇALHO
+    doc.setFillColor(29,158,117);
+    doc.rect(0,0,W,38,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(14);doc.setFont('helvetica','bold');
+    doc.text('LAUDO FOTOGRÁFICO AGRÍCOLA',W/2,12,{align:'center'});
+    doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+    doc.text('Seguro Rural — Vistoria a Campo',W/2,19,{align:'center'});
+    if(cfg.empresa)doc.text(cfg.empresa,W/2,25,{align:'center'});
+    doc.setFontSize(7.5);
+    doc.text(`Emitido em: ${new Date().toLocaleString('pt-BR')}`,W/2,31,{align:'center'});
+    y=44;
+
+    // DADOS
+    doc.setTextColor(30,30,30);
+    doc.setFillColor(240,250,245);
+    doc.roundedRect(mL,y,W-mL-mR,48,2,2,'F');
+    doc.setDrawColor(29,158,117);
+    doc.roundedRect(mL,y,W-mL-mR,48,2,2,'S');
+    const c1=mL+3,c2=W/2+2;
+    doc.setFontSize(8.5);
+    y+=6;
+    doc.setFont('helvetica','bold');doc.text('Segurado/Representante:',c1,y);
+    doc.setFont('helvetica','normal');doc.text(l.segurado||'',c1+43,y);
+    y+=6;
+    doc.setFont('helvetica','bold');doc.text('Proposta/Apólice:',c1,y);
+    doc.setFont('helvetica','normal');doc.text(l.proposta||'',c1+32,y);
+    doc.setFont('helvetica','bold');doc.text('Seguradora:',c2,y);
+    doc.setFont('helvetica','normal');doc.text(l.seguradora||'N/I',c2+21,y);
+    y+=6;
+    doc.setFont('helvetica','bold');doc.text('CPF/CNPJ:',c1,y);
+    doc.setFont('helvetica','normal');doc.text(l.cpf||'N/I',c1+19,y);
+    doc.setFont('helvetica','bold');doc.text('Data:',c2,y);
+    doc.setFont('helvetica','normal');doc.text(fmtData(l.data)||'',c2+11,y);
+    y+=6;
+    doc.setFont('helvetica','bold');doc.text('Município:',c1,y);
+    doc.setFont('helvetica','normal');doc.text(l.municipio||'N/I',c1+19,y);
+    doc.setFont('helvetica','bold');doc.text('Cultura:',c2,y);
+    doc.setFont('helvetica','normal');doc.text(l.cultura||'N/I',c2+15,y);
+    y+=6;
+    doc.setFont('helvetica','bold');doc.text('Evento/Causa:',c1,y);
+    doc.setFont('helvetica','normal');doc.text(l.evento||'N/I',c1+26,y);
+    y+=12;
+
+    // PERITO
+    if(cfg.nome){
+      doc.setFillColor(248,248,246);doc.setDrawColor(200,200,200);
+      doc.roundedRect(mL,y,W-mL-mR,16,2,2,'FD');
+      y+=5;
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(15,110,86);
+      doc.text('PERITO RESPONSÁVEL',mL+3,y);
+      doc.setTextColor(30,30,30);doc.setFont('helvetica','normal');
+      let pi=cfg.nome;
+      if(cfg.crea)pi+='  |  CREA/CFTA: '+cfg.crea;
+      if(cfg.empresa)pi+='  |  '+cfg.empresa;
+      y+=5;doc.text(pi,mL+3,y);
+      y+=10;
+    }
+
+    // OBSERVAÇÕES
+    if(l.obs){
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(15,110,86);
+      doc.text('OBSERVAÇÕES:',mL,y);y+=4;
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(30,30,30);
+      const obs=doc.splitTextToSize(l.obs,W-mL-mR);
+      doc.text(obs,mL,y);y+=obs.length*3.8+6;
+    }
+
+    // TÍTULO FOTOS
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(15,110,86);
+    doc.text(`REGISTRO FOTOGRÁFICO — ${fotos.length} FOTO${fotos.length!==1?'S':''}`,mL,y);
+    y+=3;doc.setDrawColor(29,158,117);doc.line(mL,y,W-mR,y);y+=5;
+
+    // ===== 6 FOTOS POR PÁGINA: 2 colunas x 3 linhas =====
+    const colW=(W-mL-mR-4)/2;  // largura de cada coluna
+    const imgH=42;              // altura da imagem
+    const legH=10;              // altura da área de legenda
+    const blocoH=imgH+legH+2;  // altura total de cada bloco
+    const gap=4;                // espaço entre colunas
+
+    for(let i=0;i<fotos.length;i++){
+      const f=fotos[i];
+      const col=i%2;            // 0=esquerda, 1=direita
+      const linha=Math.floor(i/2)%3; // 0,1,2
+
+      // Nova página a cada 6 fotos (i%6===0) exceto primeira
+      if(i>0&&i%6===0){
+        doc.addPage();
+        y=16;
+        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(15,110,86);
+        doc.text(`REGISTRO FOTOGRÁFICO (continuação)`,mL,y);
+        y+=3;doc.setDrawColor(29,158,117);doc.line(mL,y,W-mR,y);y+=5;
+      }
+
+      // Se é início de nova linha (col===0), avança y
+      if(col===0&&i>0&&i%6!==0){
+        y+=blocoH+3;
+      }
+
+      const x=col===0?mL:mL+colW+gap;
+      const yBloco=y;
+
+      // Fundo do bloco
+      doc.setFillColor(250,250,248);doc.setDrawColor(215,215,210);
+      doc.roundedRect(x,yBloco,colW,blocoH,2,2,'FD');
+
+      // IMAGEM
+      try{
+        let fmt='JPEG';
+        if(f.dataUrl&&f.dataUrl.includes('image/png'))fmt='PNG';
+        doc.addImage(f.dataUrl,fmt,x+1,yBloco+1,colW-2,imgH-2,`foto${i}`,'MEDIUM');
+      }catch(e){
+        doc.setFillColor(230,230,230);
+        doc.rect(x+1,yBloco+1,colW-2,imgH-2,'F');
+        doc.setTextColor(150,150,150);doc.setFontSize(7);
+        doc.text('[Imagem]',x+colW/2,yBloco+imgH/2,{align:'center'});
+      }
+
+      // GPS — canto inferior direito da imagem, fundo branco letras pretas
+      if(f.lat){
+        const gpsW=42;const gpsH=9;
+        const gpsX=x+colW-gpsW-2;
+        const gpsY=yBloco+imgH-gpsH-2;
+        doc.setFillColor(255,255,255);
+        doc.setDrawColor(200,200,200);
+        doc.roundedRect(gpsX,gpsY,gpsW,gpsH,1,1,'FD');
+        doc.setTextColor(0,0,0);doc.setFont('helvetica','normal');doc.setFontSize(5.5);
+        doc.text(`${f.lat.toFixed(5)}°`,gpsX+2,gpsY+3.5);
+        doc.text(`${f.lng.toFixed(5)}°`,gpsX+2,gpsY+7);
+      }
+
+      // BARRA NÚMERO
+      const barY=yBloco+imgH;
+      doc.setFillColor(29,158,117);
+      doc.rect(x,barY,colW,5,'F');
+      doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(6.5);
+      doc.text(`F${i+1}${f.origem==='galeria'?' (G)':''}`,x+2,barY+3.5);
+      if(f.timestamp){
+        doc.setFont('helvetica','normal');doc.setFontSize(5.5);
+        doc.text(new Date(f.timestamp).toLocaleDateString('pt-BR'),x+colW-2,barY+3.5,{align:'right'});
+      }
+
+      // LEGENDA
+      const legY=barY+5;
+      doc.setTextColor(30,30,30);doc.setFont('helvetica',f.legenda?'bold':'italic');doc.setFontSize(6.5);
+      const legTxt=f.legenda||'Sem legenda';
+      const legLines=doc.splitTextToSize(legTxt,colW-4);
+      doc.text(legLines[0]+(legLines.length>1?'...':''),x+2,legY+3.5);
+
+      // Coordenadas textuais pequenas
+      if(f.lat){
+        doc.setFont('helvetica','normal');doc.setFontSize(5);doc.setTextColor(120,120,120);
+        doc.text(`GPS: ${f.lat.toFixed(5)}° | ${f.lng.toFixed(5)}°`,x+2,legY+7.5);
+      }
+    }
+
+    // RODAPÉ
+    const total=doc.internal.getNumberOfPages();
+    for(let p=1;p<=total;p++){
+      doc.setPage(p);
+      doc.setFillColor(29,158,117);
+      doc.rect(0,H-9,W,9,'F');
+      doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.setFontSize(6.5);
+      doc.text(`${l.segurado}  |  Proposta: ${l.proposta}  |  Pág. ${p}/${total}`,W/2,H-3,{align:'center'});
+    }
+
+    const nome=`Laudo_${(l.segurado||'').replace(/\s+/g,'_')}_${(l.proposta||'').replace(/[\/\\]/g,'-')}.pdf`;
+    doc.save(nome);
+    hideLoad();
+    toast('PDF gerado! Verifique seus downloads.','ok',4000);
+  }catch(e){
+    hideLoad();
+    console.error(e);
+    toast('Erro ao gerar PDF. Tente novamente.','err',5000);
+  }
+}
+
+function goConfig(){
+  const cfg=loadCfg();
+  document.getElementById('c-nome').value=cfg.nome||'';
+  document.getElementById('c-crea').value=cfg.crea||'';
+  document.getElementById('c-empresa').value=cfg.empresa||'';
+  document.getElementById('c-tel').value=cfg.tel||'';
+  document.getElementById('c-email').value=cfg.email||'';
+  show('s-config');
+}
+
+function salvarConfig(){
+  saveCfg({
+    nome:document.getElementById('c-nome').value.trim(),
+    crea:document.getElementById('c-crea').value.trim(),
+    empresa:document.getElementById('c-empresa').value.trim(),
+    tel:document.getElementById('c-tel').value.trim(),
+    email:document.getElementById('c-email').value.trim()
+  });
+  toast('Dados salvos!','ok');
+  goHome();
+}
+
+load();renderHome();
+</script>
+</body>
+</html>
